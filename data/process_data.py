@@ -40,11 +40,15 @@ def clean_data(df):
     for column in categories:
         categories[column] = categories[column].str[-1]
         categories[column] = categories[column].astype(int)
+        categories.drop(categories[categories[column] > 1].index, inplace=True)
 
     # Replace categories column in df with new category columns
     df = df.drop('categories', axis=1)
     df = pd.concat([df, categories], axis=1)
 
+    # Check values
+    for column in categories:
+        print(df[column].value_counts())
     return df
 
 

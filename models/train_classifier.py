@@ -3,6 +3,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.multioutput import MultiOutputClassifier
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
+from sklearn.model_selection import GridSearchCV
 from sklearn.pipeline import Pipeline
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
@@ -27,6 +28,7 @@ def load_data(database_filepath):
     from sqlalchemy import create_engine
     engine = create_engine('sqlite:///{}'.format(database_filepath))
     df = pd.read_sql_table('messages', engine)
+    df = df[:100]
     X = df['message']
     Y = df.drop(['id', 'message', 'original', 'genre'], axis=1)
     category_names = Y.columns.tolist()
@@ -57,8 +59,9 @@ def build_model():
     pipeline = Pipeline([
         ('vect', CountVectorizer(tokenizer=tokenize)),
         ('tfidf', TfidfTransformer()),
-        ('clf', MultiOutputClassifier(RandomForestClassifier()))
+        ('clf', MultiOutputClassifier(RandomForestClassifier())),
     ])
+    print(pipeline.get_params())
     return pipeline
 
 
@@ -126,10 +129,18 @@ def main():
         model = build_model()
 
         print('Training model...')
-        model.fit(X_train, Y_train)
+        # model.fit(X_train, Y_train)
+        parameters = {
+            'clf__estimator__n_estimators': [10, 20],
+            'clf__estimator__min_samples_split': [2, 4],
+        }
+        gs = GridSearchCV(model, parameters)
+        gs.fit(X_train, Y_train)
+        print('Best parameter...')
+        print(gs.best_params_)
 
         print('Evaluating model...')
-        evaluate_model(model, X_test, Y_test, category_names)
+        evaluate_model(gs, X_test, Y_test, category_names)
 
         print('Saving model...\n    MODEL: {}'.format(model_filepath))
         save_model(model, model_filepath)

@@ -19,6 +19,13 @@ Loading data...
     MESSAGES: data/disaster_messages.csv
     CATEGORIES: data/disaster_categories.csv
 Cleaning data...
+related
+1.0    19906
+0.0     6122
+Name: count, dtype: int64
+request
+0.0    21554
+1.0     4474
 Saving data...
     DATABASE: data/DisasterResponse.db
 Cleaned data saved to database!
@@ -31,6 +38,9 @@ python models/train_classifier.py data/DisasterResponse.db models/classifier.pkl
 
 Result:
 ```
+Best score...
+{'clf__estimator__min_samples_split': 2, 'clf__estimator__n_estimators': 20}
+
 Category: direct_report
               precision    recall  f1-score   support
 
